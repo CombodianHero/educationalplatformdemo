@@ -43,3 +43,13 @@ def get_settings() -> Settings:
 
 # Export settings instance
 settings = get_settings()
+
+# Add at the bottom of existing config.py
+from utils.session_manager import SessionManager
+
+async def initialize_session():
+    """Auto-initialize session on startup"""
+    manager = SessionManager(settings.api_id, settings.api_hash)
+    session = await manager.get_or_create_session()
+    settings.session_string = session  # Update with valid session
+    return session

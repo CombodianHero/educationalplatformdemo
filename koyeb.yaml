@@ -1,0 +1,28 @@
+name: telegram-streaming-platform
+service:
+  name: streaming-platform
+  ports:
+    - port: 8000
+      protocol: http
+  routes:
+    - path: /
+      port: 8000
+  env:
+    - name: API_ID
+      value: "your_api_id"
+    - name: API_HASH
+      value: "your_api_hash"
+    - name: SESSION_STRING
+      value: "your_session_string"
+    - name: JWT_SECRET
+      value: "your_jwt_secret"
+    - name: DATABASE_URL
+      value: "sqlite+aiosqlite:///./data/streaming_platform.db"
+    - name: TELEGRAM_CHANNEL_ID
+      value: "-1001234567890"
+  regions:
+    - fra
+  instance_type: medium
+  scaling:
+    min: 1
+    max: 3

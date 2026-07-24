@@ -1,44 +1,27 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 
-const AuthContext = createContext({})
+const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is already logged in
     const token = localStorage.getItem('access_token')
     if (token) {
-      fetchUser(token)
-    } else {
-      setLoading(false)
+      axios.get('/api/me', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => setUser(r.data))
+        .catch(() => localStorage.removeItem('access_token'))
     }
+    setLoading(false)
   }, [])
 
-  const fetchUser = async (token) => {
-    try {
-      const response = await axios.get('/api/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setUser(response.data)
-    } catch (error) {
-      localStorage.removeItem('access_token')
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const login = async (username, password) => {
-    const response = await axios.post('/api/login', { username, password })
-    const { access_token, user } = response.data
-    
-    localStorage.setItem('access_token', access_token)
-    setUser(user)
-    
-    return user
+    const res = await axios.post('/api/login', { username, password })
+    localStorage.setItem('access_token', res.data.access_token)
+    setUser(res.data.user)
+    return res.data.user
   }
 
   const logout = () => {
@@ -46,13 +29,7 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ user, login, logout, loading }}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
-  return useContext(AuthContext)
-}
+export const useAuth = () => useContext(AuthContext)
